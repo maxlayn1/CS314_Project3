@@ -18,7 +18,7 @@
 #include <pthread.h>                    // pthread implementation      
 
 void *child_thread_routine (void * arg);
-void clock_interrupt_handler(void);
+void clock_interrupt_handler(int signum);
 
 pthread_mutex_t  condition_mutex;  // pthread mutex_condition 
 pthread_cond_t   t_condition;      // pthread condition
@@ -36,8 +36,8 @@ int main(void)
     schedule_vector[2] = 2;        // the third thread
     schedule_vector[3] = 3;        // the fourth thread
     schedule_vector[4] = 4;        // the fifth thread
-    int i = 0;                     // the loop counter for the parent thread  
-    loop_counter = 0;              // initialize the loop counter for the interrupt handler
+    int parent_loop_counter = 5;   // the loop counter for the parent thread  
+    int interrupt_loop_counter = 0;// initialize the loop counter for the interrupt handler
 
     /* specify the clock interrupt to be sent to this process --- */
     signal(SIGALRM, clock_interrupt_handler);
