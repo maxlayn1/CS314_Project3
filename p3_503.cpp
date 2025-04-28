@@ -17,25 +17,20 @@
 #include <unistd.h>                     // for "alarm"                 
 #include <pthread.h>                    // pthread implementation      
 
-/* prototypes --------------------------------------------------------- */
-void child_thread_routine (void * arg); // definition of a chile thread
+void child_thread_routine (void * arg);
 void clock_interrupt_handler(void);
 
-/* global variables ---------------------------------------------------*/
 pthread_mutex_t  condition_mutex;  // pthread mutex_condition 
 pthread_cond_t   t_condition;      // pthread condition
 int schedule_vector[5];            // the required thread schedule vector
 int loop_counter;                  // loop counter for the interrupt handler
 
-/* the main (the parent thread) --------------------------------------- */
 int main(void)
 {
-    /* thread attributes for managing child threads ------------------- */
     pthread_t        thread;       // thread IDs (assigned by OS)
     pthread_attr_t     attr;       // thread attributes 
     int                 ids;       // thread arguments
 
-    /* initialize the schedule vector --------------------------------- */
     schedule_vector[0] = 0;        // the first thread
     schedule_vector[1] = 1;        // the second thread
     schedule_vector[2] = 2;        // the third thread
@@ -49,13 +44,9 @@ int main(void)
     /* set the interrupt interval to 1 second --- */
     alarm(SCHEDULE_INTERVAL);
 
-    /* initialize pthread mutex --------------------------------------- */
     pthread_mutex_init (&condition_mutex, NULL);
-
-    /* initialize pthread condition variable -------------------------- */
     pthread_cond_init (&t_condition, NULL);
 
-    /* create a child thread ------------------------------------------ */
     ids = 0;                         // thread ID = 0
     pthread_create (                 // xreate a child thread   
                &thread,              // thread ID (system assigned)
@@ -63,26 +54,19 @@ int main(void)
                (void *) (child_thread_routine), // thread routine name
                &ids);                // arguments to be passed
 
-    /* inifinite loop for the parent thread --------------------------- */
     printf("   the parent thread starts looping ....\n");
     while (1)
     {
-       /* the parent thread waits for one second -------------- */
-       sleep (1);
+       sleep (1); // wait for one second
 
-       /* the parent thread unlock the condition variable ----- */
        printf("        the parent thread signals the child thread ...\n");
        pthread_mutex_lock(&condition_mutex);
-          pthread_cond_signal(&t_condition);
+         pthread_cond_signal(&t_condition);
        pthread_mutex_unlock(&condition_mutex);
     }
-
-    /* The main (parent) thread terminates itself ------------------ */
-    return(0);
+    return(0); // parent thread terminates
 }
-/* THE END OF MAIN ===================================================== */
 
-/* child thread implementation ---------------------------------------- */
 void child_thread_routine (void * arg)  
 {
    int  myid = *(int *) arg;   // child thread number (not ID)
@@ -115,7 +99,6 @@ void child_thread_routine (void * arg)
    /* -------------------------------------------------------- */
    }
 }
-/* END OF A CHILD THREAD ============================================== */
 
 /* The interrupt handler for SIGALM interrupt ---------------------- */
 void clock_interrupt_handler(void)
