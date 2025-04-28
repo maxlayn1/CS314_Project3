@@ -17,7 +17,7 @@
 #include <unistd.h>                     // for "alarm"                 
 #include <pthread.h>                    // pthread implementation      
 
-void child_thread_routine (void * arg);
+void *child_thread_routine (void * arg);
 void clock_interrupt_handler(void);
 
 pthread_mutex_t  condition_mutex;  // pthread mutex_condition 
@@ -40,7 +40,7 @@ int main(void)
     loop_counter = 0;              // initialize the loop counter for the interrupt handler
 
     /* specify the clock interrupt to be sent to this process --- */
-    signal(SIGALRM, (void *) (clock_interrupt_handler));
+    signal(SIGALRM, clock_interrupt_handler);
     /* set the interrupt interval to 1 second --- */
     alarm(SCHEDULE_INTERVAL);
 
@@ -48,10 +48,10 @@ int main(void)
     pthread_cond_init (&t_condition, NULL);
 
     ids = 0;                         // thread ID = 0
-    pthread_create (                 // xreate a child thread   
+    pthread_create (                 // create a child thread   
                &thread,              // thread ID (system assigned)
                NULL,                 // default thread attributes
-               (void *) (child_thread_routine), // thread routine name
+               child_thread_routine, // thread routine name
                &ids);                // arguments to be passed
 
     printf("   the parent thread starts looping ....\n");
@@ -67,7 +67,7 @@ int main(void)
     return(0); // parent thread terminates
 }
 
-void child_thread_routine (void * arg)  
+void *child_thread_routine (void * arg)  
 {
    int  myid = *(int *) arg;   // child thread number (not ID)
    int  my_counter = 0;        // local loop counter
@@ -77,7 +77,7 @@ void child_thread_routine (void * arg)
    /* add one (them) here.                                     */
    /* -------------------------------------------------------- */
 
-   /* declarare the start of this child thread (required) ---- */
+   /* declare the start of this child thread (required) ---- */
    printf("Child thread %d started ...\n", myid);   
 
    /* -------------------------------------------------------- */
@@ -95,13 +95,13 @@ void child_thread_routine (void * arg)
 
    /* -------------------------------------------------------- */
    /* Here is your working space (to implement some mechanism) */
-   /* to synchronize with the interrupt handeler.              */
+   /* to synchronize with the interrupt handler.               */
    /* -------------------------------------------------------- */
    }
 }
 
 /* The interrupt handler for SIGALM interrupt ---------------------- */
-void clock_interrupt_handler(void)
+void clock_interrupt_handler(int signum)
 {
    /* to be displayed at each time I woke up ---------------- */
    printf("I woke up on the timer interrupt (%d) .... \n", loop_counter);
